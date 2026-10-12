@@ -1,0 +1,31 @@
+# Second example profile — copy pattern for new variants (see docs/REUSE_TEMPLATE.md).
+name: ops-dashboard
+description: >
+  Lighter tool set for quick RAG Q&A and HTML dashboards without HITL.
+
+graph: react
+
+llm:
+  provider: openai
+  model_env: OPENAI_MODEL
+
+paths:
+  ingest: /ingest
+  workspace: /workspace
+
+tools:
+  - ingest_scan
+  - rag_search
+  - read_file
+  - write_html_artifact
+
+hitl:
+  enabled: false
+
+rag:
+  collection: documents
+  chunk_size: 800
+  chunk_overlap: 100
+
+artifacts:
+  default_filename: dashboard.html

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LAN Agent Chat</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header>
+    <h1>LAN Agent</h1>
+    <p class="muted">Document RAG + HTML artifacts (Phase 2)</p>
+  </header>
+  <main class="layout">
+    <section class="chat" aria-label="Chat">
+      <div id="messages" class="messages"></div>
+      <div id="approval-bar" class="approval-bar" hidden>
+        <p class="approval-text">Approve HTML artifact?</p>
+        <div class="approval-actions">
+          <button type="button" data-approve="true">Approve</button>
+          <button type="button" data-approve="false" class="secondary">Reject</button>
+        </div>
+      </div>
+      <form id="chat-form" class="chat-form">
+        <input id="chat-input" type="text" placeholder="Ask about ingested documents…" autocomplete="off" />
+        <button type="submit">Send</button>
+      </form>
+    </section>
+    <section class="artifact" aria-label="HTML artifact">
+      <h2>Artifact</h2>
+      <iframe
+        id="artifact-frame"
+        title="HTML artifact preview"
+        sandbox="allow-scripts allow-same-origin"
+        srcdoc="<p style='font-family:sans-serif;color:#666;padding:1rem'>Generated HTML will appear here.</p>"
+      ></iframe>
+    </section>
+  </main>
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,384 @@
+{
+  "info": {
+    "_postman_id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+    "name": "LAN Agent Template",
+    "description": "Full API smoke tests for the LangGraph LAN agent (health, config, ingest, chat, HITL resume, artifacts).\n\nImport with environment **LAN Agent — Local** or **LAN Agent — LAN host**.\n\nRun folder **0 — Smoke (run in order)** first.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "threadId",
+      "value": "postman-test-1"
+    },
+    {
+      "key": "artifactName",
+      "value": "summary.html"
+    }
+  ],
+  "item": [
+    {
+      "name": "0 — Smoke (run in order)",
+      "item": [
+        {
+          "name": "1 Health",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Has status field', () => pm.expect(j).to.have.property('status'));",
+                  "pm.test('Runtime is true', () => pm.expect(j.runtime).to.eql(true));",
+                  "if (j.profile) {",
+                  "  pm.environment.set('agentProfile', j.profile);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/health"
+          }
+        },
+        {
+          "name": "2 API Config",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('runtime_ready', () => pm.expect(j.runtime_ready).to.eql(true));",
+                  "pm.test('profile present', () => pm.expect(j.profile).to.be.a('string'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/config"
+          }
+        },
+        {
+          "name": "3 Ingest scan",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('ingest result object', () => pm.expect(j).to.have.property('ingested_files'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/ingest"
+          }
+        },
+        {
+          "name": "4 Chat — summarize documents",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Has reply', () => pm.expect(j.reply).to.be.a('string'));",
+                  "pm.test('Has thread_id', () => pm.expect(j.thread_id).to.be.a('string'));",
+                  "pm.environment.set('threadId', j.thread_id);",
+                  "if (j.artifact_url) {",
+                  "  const name = j.artifact_url.split('/').pop();",
+                  "  pm.environment.set('artifactName', name);",
+                  "}",
+                  "if (j.status === 'interrupt') {",
+                  "  pm.collectionVariables.set('lastInterrupt', 'true');",
+                  "} else {",
+                  "  pm.collectionVariables.set('lastInterrupt', 'false');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Run ingest_scan if needed, then summarize the ingested documents in a few bullet points.\",\n  \"thread_id\": \"{{threadId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/chat"
+          }
+        },
+        {
+          "name": "5 List artifacts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('artifacts array', () => pm.expect(j.artifacts).to.be.an('array'));",
+                  "if (j.artifacts.length > 0) {",
+                  "  pm.environment.set('artifactName', j.artifacts[j.artifacts.length - 1]);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/artifacts"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health & Config",
+      "item": [
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/health"
+          }
+        },
+        {
+          "name": "API Config",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/config"
+          }
+        },
+        {
+          "name": "Chat UI (HTML)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ingest",
+      "item": [
+        {
+          "name": "POST Ingest",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/ingest"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Chat",
+      "item": [
+        {
+          "name": "Chat — RAG question",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const j = pm.response.json();",
+                  "  pm.environment.set('threadId', j.thread_id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"What files are in the ingest folder? Use list_files if helpful.\",\n  \"thread_id\": \"{{threadId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/chat"
+          }
+        },
+        {
+          "name": "Chat — request HTML dashboard",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const j = pm.response.json();",
+                  "  pm.environment.set('threadId', j.thread_id);",
+                  "  if (j.artifact_url) {",
+                  "    pm.environment.set('artifactName', j.artifact_url.split('/').pop());",
+                  "  }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Create a simple HTML dashboard with a Chart.js bar chart summarizing key themes from the documents. Use write_html_artifact.\",\n  \"thread_id\": \"{{threadId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/chat"
+          }
+        },
+        {
+          "name": "Chat — run workspace script",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Run the script scripts/example_transform.py with run_script and report the output.\",\n  \"thread_id\": \"{{threadId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/chat"
+          }
+        },
+        {
+          "name": "Chat — new thread (no thread_id)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Hello — what can you help me with on this LAN agent?\"\n}"
+            },
+            "url": "{{baseUrl}}/api/chat"
+          }
+        }
+      ]
+    },
+    {
+      "name": "HITL",
+      "item": [
+        {
+          "name": "Resume — Approve artifact",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const j = pm.response.json();",
+                  "  if (j.artifact_url) {",
+                  "    pm.environment.set('artifactName', j.artifact_url.split('/').pop());",
+                  "  }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"thread_id\": \"{{threadId}}\",\n  \"approved\": true\n}"
+            },
+            "url": "{{baseUrl}}/api/chat/resume"
+          }
+        },
+        {
+          "name": "Resume — Reject artifact",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"thread_id\": \"{{threadId}}\",\n  \"approved\": false\n}"
+            },
+            "url": "{{baseUrl}}/api/chat/resume"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Artifacts",
+      "item": [
+        {
+          "name": "List artifacts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/artifacts"
+          }
+        },
+        {
+          "name": "Get artifact by name",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/artifacts/{{artifactName}}"
+          }
+        }
+      ]
+    }
+  ]
+}

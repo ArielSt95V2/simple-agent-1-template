@@ -1,0 +1,11 @@
+# Optional override: bind a LAN share as read-only ingest.
+# Usage (from compose/):
+#   docker compose -f docker-compose.yml -f docker-compose.lan.example.yml up --build
+#
+# Edit the volume path for your file server / synced folder.
+
+services:
+  agent:
+    volumes:
+      - //FILE-SERVER/share/rag-inbox:/ingest:ro
+      - ../data/workspace:/workspace:rw

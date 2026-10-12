@@ -1,0 +1,48 @@
+services:
+  agent:
+    build:
+      context: ..
+      dockerfile: sandbox/Dockerfile
+    env_file:
+      - .env
+    environment:
+      AGENT_PROFILE: ${AGENT_PROFILE:-document-chatbot}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      POSTGRES_URL: ${POSTGRES_URL:-postgresql+psycopg://agent:agent@postgres:5432/agent}
+      CHECKPOINT_POOL_SIZE: ${CHECKPOINT_POOL_SIZE:-10}
+      INGEST_PATH: /ingest
+      WORKSPACE_PATH: /workspace
+      SCRIPT_TIMEOUT_SECONDS: ${SCRIPT_TIMEOUT_SECONDS:-120}
+      MAX_TOOL_OUTPUT_CHARS: ${MAX_TOOL_OUTPUT_CHARS:-12000}
+      MAX_WRITE_BYTES: ${MAX_WRITE_BYTES:-524288}
+      MAX_READ_BYTES: ${MAX_READ_BYTES:-524288}
+    ports:
+      - "${AGENT_BIND:-0.0.0.0}:${AGENT_PORT:-8080}:8080"
+    volumes:
+      - ${INGEST_HOST_PATH:-../data/ingest}:/ingest:ro
+      - ${WORKSPACE_HOST_PATH:-../data/workspace}:/workspace:rw
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-agent}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-agent}
+      POSTGRES_DB: ${POSTGRES_DB:-agent}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-agent} -d ${POSTGRES_DB:-agent}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

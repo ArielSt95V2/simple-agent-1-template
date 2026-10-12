@@ -1,0 +1,43 @@
+name: document-chatbot
+description: >
+  Ingest files from the LAN upload folder, embed in Postgres, chat with RAG,
+  and emit interactive HTML summaries (charts/diagrams).
+
+graph: react
+
+llm:
+  provider: openai
+  model_env: OPENAI_MODEL
+
+paths:
+  ingest: /ingest
+  workspace: /workspace
+
+tools:
+  - ingest_scan
+  - rag_search
+  - extract_structured
+  - list_files
+  - read_file
+  - write_file
+  - run_script
+  - write_html_artifact
+  - register_artifact
+
+sandbox:
+  ingest_mount: ro
+  workspace_mount: rw
+  script_dir: scripts
+
+hitl:
+  enabled: true
+  # write_html_artifact calls langgraph.types.interrupt — approve via UI or POST /api/chat/resume
+
+rag:
+  collection: documents
+  chunk_size: 1000
+  chunk_overlap: 150
+
+artifacts:
+  iframe_sandbox: allow-scripts allow-same-origin
+  default_filename: summary.html
