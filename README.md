@@ -47,6 +47,7 @@ Requires Python **≥ 3.12**.
 
 ## Docs
 
+- [Project structure & data flow (start here if you're new)](PROJECT_STRUCTURE.md)
 - [Implementation plan](docs/CODING_AGENT_TEMPLATE_PLAN.md)
 - [Security checklist](docs/SECURITY.md)
 - [Sandbox mounts & tools](docs/SANDBOX.md)

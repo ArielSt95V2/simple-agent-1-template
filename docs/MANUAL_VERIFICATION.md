@@ -10,21 +10,21 @@ Base URL: `http://HOST:8080`
 
 ## 1. Health & config
 
-| Check | Method | URL | Expected |
-|-------|--------|-----|----------|
-| Liveness | GET | `/health` | `200`, `"status": "ok"`, `"runtime": true` |
-| Profile | GET | `/api/config` | `200`, your `AGENT_PROFILE`, paths `/ingest`, `/workspace` |
+| Check    | Method | URL           | Expected                                                   |
+| -------- | ------ | ------------- | ---------------------------------------------------------- |
+| Liveness | GET    | `/health`     | `200`, `"status": "ok"`, `"runtime": true`                 |
+| Profile  | GET    | `/api/config` | `200`, your `AGENT_PROFILE`, paths `/ingest`, `/workspace` |
 
 **curl**
 
 ```bash
-curl -s http://HOST:8080/health | jq
-curl -s http://HOST:8080/api/config | jq
+curl.exe -s http://HOST:8080/health
+curl.exe -s http://HOST:8080/api/config
 ```
 
 **Postman**
 
-- Import **`postman/LAN-Agent-Template.postman_collection.json`** and **`postman/LAN-Agent-Template.postman_environment.json`**.
+- Import `postman/LAN-Agent-Template.postman_collection.json` and `postman/LAN-Agent-Template.postman_environment.json`.
 - Run folder **0 — Smoke (run in order)**. See [postman/README.md](../postman/README.md).
 - No auth headers in v1.
 
@@ -117,12 +117,12 @@ Ensure host firewall allows inbound **8080** on the agent PC.
 
 ## 8. Quick pass/fail
 
-| Step | Pass |
-|------|------|
-| `/health` runtime true | Stack + OpenAI key OK |
-| `/api/ingest` | Mount `/ingest` + Postgres OK |
-| `/api/chat` | LangGraph + Postgres checkpoints OK |
-| UI loads | Static files OK |
-| `/api/artifacts/...` | Workspace mount OK |
+| Step                   | Pass                                |
+| ---------------------- | ----------------------------------- |
+| `/health` runtime true | Stack + OpenAI key OK               |
+| `/api/ingest`          | Mount `/ingest` + Postgres OK       |
+| `/api/chat`            | LangGraph + Postgres checkpoints OK |
+| UI loads               | Static files OK                     |
+| `/api/artifacts/...`   | Workspace mount OK                  |
 
 When all pass, the template is ready to publish as a **git template** on your remote.
